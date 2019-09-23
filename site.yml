@@ -1,0 +1,43 @@
+---
+- hosts: giteabp
+  remote_user: root
+
+  tasks:
+    - name: Download gitea
+      get_url:
+        url:
+        dest: /tmp/gitea
+        
+    - name: Verify GPG signature
+      apt_key:
+        keyserver: pgp.mit.edu
+        id: 7C9E68152594688862D62AF62D9AE806EC1592E2
+    
+    - name: Add system group "gitea"
+      group:
+        name: gitea
+        state: present
+
+    - name: Create system user gitea
+      user:
+        name: gitea
+        system: yes
+        createhome: yes
+        home: /home/gitea
+        shell: /bin/bash
+        groups: gitea
+    
+    - name: Create required folders
+      file:
+        path: "/var/lib/{{ item }}"
+        state: present
+        mode: 0750
+        owner: gitea
+        group: gitea
+      with_items:
+        - gitea/custom
+        - gitea/data
+        - gitea/log
+
+
+
